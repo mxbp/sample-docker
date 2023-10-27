@@ -4,30 +4,18 @@ name: Docker
 on:
   push:
     branches:
-      - "develop"
-      - "release/*"
+      - 'develop'
+      - 'release/**'
     pull_request:
       branches:
-        - "develop"
+        - 'develop'
+        - 'main'
     workflow_dispatch:
       # inputs:
       #   docker_registry:
       #     required: false
-      #     default: ghcr.io # ${{ inputs.docker_registry }}
+      #     default: ghcr.io # FIXME: ${{ inputs.docker_registry }}
       #     type: string
-      #   logLevel:
-      #     description: 'Log level'
-      #     required: true
-      #     default: 'warning'
-      #     type: choice
-      #     options:
-      #     - info
-      #     - warning
-      #     - debug
-      #   tags:
-      #     description: 'Test scenario tags'
-      #     required: false
-      #     type: boolean
       #   environment:
       #     description: 'Environment to run tests against'
       #     type: environment
@@ -37,10 +25,12 @@ jobs:
   build_push:
     name: Build > Push
     runs-on: ubuntu-latest
+    if: >
+      github.base_ref != github.event.repository.default_branch
+    # outputs:
+    #   image_name: ${{ steps.meta.outputs.tags }}
     permissions:
       packages: write
-    outputs:
-      image_name: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -70,22 +60,37 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=ref,event=branch,suffix=-${{ github.run_number }}
-            type=ref,event=pr,suffix=-${{ github.run_number }}
+            type=ref,event=branch,suffix=-${{ github.run_attempt }}
+            type=ref,event=pr,suffix=-${{ github.run_attempt }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
       - name: Login to ghcr.io container registry
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
-          registry: ghcr.io
+          registry: ghcr.io # FIXME: ${{ inputs.docker_registry }}
           username: ${{ secrets.docker_username != null && secrets.docker_username || github.actor }}
           password: ${{ secrets.docker_password != null && secrets.docker_password || secrets.GITHUB_TOKEN }}
       - name: ${{ github.event_name == 'pull_request' && 'Build' || 'Build and Push' }}
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile # FIXME: Make variable
           push: ${{ contains(github.event_name, 'push') }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+  create_tag:
+    name: Make tag
+    runs-on: ubuntu-latest
+    if: >
+      github.base_ref == github.event.repository.default_branch &&
+      contains(fromJSON('["release", "hotfix"]'), github.head_ref)
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0        
+      - name: Set Git tag
+        run: |
+          git tag v${GITHUB_HEAD_REF##*/}
+          git push --tags
