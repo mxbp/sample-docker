@@ -1,0 +1,25 @@
+---
+on:
+  pull_request:
+    branches:
+      - 'releases/**'
+      - 'hotfix/**'
+    types:
+      - closed
+  
+jobs:
+  create_tag:
+    name: Create tag
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set Git tag
+        # Settings > Actions > General > Workflow permissions > Read and write permissions
+        run: |
+          git tag --force "v${GITHUB_HEAD_REF##*/}"
+          git push --force --tags
+...
