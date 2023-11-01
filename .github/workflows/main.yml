@@ -9,6 +9,7 @@ on:
     pull_request:
       branches:
         - 'develop'
+        - 'release/**'
         - 'main'
     workflow_dispatch:
       # inputs:
@@ -36,6 +37,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - name: Debug Info
+        run: |
+          echo "github.head_ref - ${{ github.head_ref }}"
+          echo "github.base_ref - ${{ github.base_ref }}"
+          echo "github.ref_name - ${{ github.ref_name }}"
+          echo "github.run_number - ${{ github.run_number }}"
+          echo "github.run_attempt - ${{ github.run_attempt }}"
       # - name: Dependency Review
       #   uses: actions/dependency-review-action@v3
       #   with:
@@ -82,9 +90,8 @@ jobs:
   create_tag:
     name: Make tag
     runs-on: ubuntu-latest
-    if: >
-      github.base_ref == github.event.repository.default_branch &&
-      contains(fromJSON('["release", "hotfix"]'), github.head_ref)
+    if: contains(fromJSON('["release", "hotfix"]'), github.head_ref)
+    # github.base_ref == github.event.repository.default_branch &&
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
