@@ -4,12 +4,12 @@ name: Docker
 on:
   push:
     branches:
-      - 'develop'
-      - 'release/**'
+      - "develop"
+      - "release/**"
   pull_request:
     branches:
-      - 'develop'
-      - 'main'
+      - "develop"
+      - "main"
   workflow_dispatch:
     # inputs:
     #   docker_registry:
@@ -95,9 +95,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0        
+        # with:
+        #   fetch-depth: 0
       - name: Set Git tag
+        # Settings > Actions > General > Workflow permissions > Read and write permissions
         run: |
-          git tag v${GITHUB_HEAD_REF##*/}
-          git push --tags
+          git tag --force "v${GITHUB_HEAD_REF##*/}"
+          git push --force --tags
