@@ -64,6 +64,7 @@
             push: ${{ contains(github.event_name, 'push') }}
             tags: ${{ steps.meta.outputs.tags }}
             labels: ${{ steps.meta.outputs.labels }}
+            build-args: VERSION=${GITHUB_REF_NAME##*/}
     create_tag:
       name: Make tag
       runs-on: ubuntu-latest
