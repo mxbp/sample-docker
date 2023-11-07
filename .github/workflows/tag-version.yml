@@ -5,7 +5,8 @@ on:
       - main
     types:
       - closed
-  
+env:
+  TAG_VERSION: "v${GITHUB_HEAD_REF##*/}"
 jobs:
   create_tag:
     name: Create tag
@@ -14,11 +15,41 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+        # with:
+        #   fetch-depth: 0
+      - name: Set Git user name and email
+        run: |
+          git config --local user.name "GitHub Actions Bot"
+          git config --local user.email "github-actions-bot@github.com"
       - name: Set Git tag
         # Settings > Actions > General > Workflow permissions > Read and write permissions
         run: |
-          git tag --force "v${GITHUB_HEAD_REF##*/}"
+          git tag --force "${TAG_VERSION}"
           git push --force --tags
+        # TODO: Mark develop branch as default branch
+      - name: Merge 'main' back to '${{ github.event.repository.default_branch }}''
+        run: |
+          git fetch --unshallow
+          git checkout ${{ github.event.repository.default_branch }}
+          git pull
+          git merge --no-ff master -m "Auto-merge ${{ github.head_ref }} back to ${{ github.base_ref }}"
+          git push
+      - name: Create Release
+        run:
+          gh release create "${TAG_VERSION}" --generate-notes
+        # id: create_release
+        # uses: actions/create-release@v1
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # with:
+        #   tag_name: ${{ steps.tag.outputs.tag }}
+        #   release_name: ${{ steps.tag.outputs.tag }}
+        #   draft: false
+        #   prerelease: false
+
+      # Create PR
+      # - name: pull-request
+      #   run: |
+      #     gh_pr_up() { gh pr create $* || gh pr edit $* }
+      #     gh_pr_up --title "My pull request" --body "Description"
 ...
