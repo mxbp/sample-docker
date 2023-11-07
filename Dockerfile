@@ -1,3 +1,7 @@
 FROM alpine:latest
 
-CMD [ "echo", "version" ]
+ARG VERSION
+
+RUN echo "${VERSION}" > .version
+
+CMD [ "cat", ".version" ]

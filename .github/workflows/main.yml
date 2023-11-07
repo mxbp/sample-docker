@@ -65,6 +65,7 @@ jobs:
           push: ${{ contains(github.event_name, 'push') }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: VERSION=${GITHUB_REF_NAME##*/}
       - name: Create/Update PR to 'main'
         if: startsWith(github.ref_name, 'release') || startsWith(github.ref_name, 'hotfix')
         # TODO: READMR.md :: Settings > Actions > General > Workflow permissions > Allow GitHub Actions to create and
