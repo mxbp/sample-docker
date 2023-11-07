@@ -5,8 +5,7 @@ on:
       - main
     types:
       - closed
-env:
-  TAG_VERSION: "v${GITHUB_HEAD_REF##*/}"
+
 jobs:
   create_tag:
     name: Create tag
@@ -24,7 +23,7 @@ jobs:
       - name: Set Git tag
         # Settings > Actions > General > Workflow permissions > Read and write permissions
         run: |
-          git tag --force "${TAG_VERSION}"
+          git tag --force "v${GITHUB_HEAD_REF##*/}"
           git push --force --tags
         # TODO: Mark develop branch as default branch
       - name: Merge 'main' back to '${{ github.event.repository.default_branch }}''
@@ -36,7 +35,7 @@ jobs:
           git push
       - name: Create Release
         run:
-          gh release create "${TAG_VERSION}" --generate-notes
+          gh release create "v${GITHUB_HEAD_REF##*/}" --generate-notes
         # id: create_release
         # uses: actions/create-release@v1
         # env:
