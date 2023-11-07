@@ -1,13 +1,15 @@
 ---
 changelog:
+  exclude:
+    authors:
+      - github-actions-bot@github.com
   categories:
     - title: 🏕 Features
       labels:
-        - '*'
+        - "*"
       exclude:
         labels:
           - dependencies
     - title: 👒 Dependencies
       labels:
         - dependencies
-...
