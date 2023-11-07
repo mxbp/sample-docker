@@ -77,7 +77,8 @@ jobs:
           gh_pr_up \
             --base main \
             --title "Release v${GITHUB_REF_NAME##*/}" \
-            --body "Created by GitHub Actions"
+            --body "Created by GitHub Actions" \
+            --draft
         env:
           GH_TOKEN: ${{ github.token }}
 ...
