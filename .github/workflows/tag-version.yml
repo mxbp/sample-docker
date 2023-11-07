@@ -25,7 +25,7 @@ jobs:
           git config --local user.name "GitHub Actions Bot"
           git config --local user.email "github-actions-bot@github.com"
       - name: Set Git tag
-        # Settings > Actions > General > Workflow permissions > Read and write permissions
+        # TODO: READMR.md :: Settings > Actions > General > Workflow permissions > Read and write permissions
         run: |
           git tag --force --message="v${GITHUB_HEAD_REF##*/}" "v${GITHUB_HEAD_REF##*/}"
           git push --force --tags
@@ -38,8 +38,9 @@ jobs:
           git merge --no-ff $MAIN_BRANCH_NAME -m "Auto-merge ${{ github.head_ref }} back to ${{ github.base_ref }}"
           git push
       - name: Create Release
-        run:
-          gh release create "v${GITHUB_HEAD_REF##*/}" --generate-notes
+        run: gh release create "v${GITHUB_HEAD_REF##*/}" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
         # id: create_release
         # uses: actions/create-release@v1
         # env:
