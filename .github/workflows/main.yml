@@ -75,9 +75,11 @@ jobs:
             gh pr create "$@" || gh pr edit "$@"
           }
           gh_pr_up \
-            --base main \
+            --base "main" \
+            --label "release" \
             --title "Release v${GITHUB_REF_NAME##*/}" \
-            --body "Created by GitHub Actions"
+            --body "Created by GitHub Actions" \
+            --draft
         env:
           GH_TOKEN: ${{ github.token }}
 ...
