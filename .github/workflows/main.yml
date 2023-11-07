@@ -5,8 +5,8 @@ on:
   push:
     branches:
       - develop
-      - 'release/**'
-      - 'hotfix/**'
+      - "release/**"
+      - "hotfix/**"
   pull_request:
     branches:
       - develop
@@ -72,12 +72,11 @@ jobs:
         # approve pull requests
         run: |
           gh_pr_up() {
-            gh pr create "$@" || gh pr edit "$@"
+            gh pr create --draft "$@" || gh pr edit "$@"
           }
           gh_pr_up \
-            --base main \
+            --base "main" \
             --title "Release v${GITHUB_REF_NAME##*/}" \
             --body "Created by GitHub Actions"
         env:
           GH_TOKEN: ${{ github.token }}
-...
