@@ -6,6 +6,10 @@ on:
     types:
       - closed
 
+env:
+  # TODO: Move to workflow_dispatch input
+  MAIN_BRANCH_NAME: main
+
 jobs:
   create_tag:
     name: Create tag
@@ -23,15 +27,15 @@ jobs:
       - name: Set Git tag
         # Settings > Actions > General > Workflow permissions > Read and write permissions
         run: |
-          git tag --force "v${GITHUB_HEAD_REF##*/}"
+          git tag --force --message="v${GITHUB_HEAD_REF##*/}" "v${GITHUB_HEAD_REF##*/}"
           git push --force --tags
         # TODO: Mark develop branch as default branch
-      - name: Merge 'main' back to '${{ github.event.repository.default_branch }}''
+      - name: Merge '$MAIN_BRANCH_NAME' back to '${{ github.event.repository.default_branch }}'
         run: |
           git fetch --unshallow
           git checkout ${{ github.event.repository.default_branch }}
           git pull
-          git merge --no-ff master -m "Auto-merge ${{ github.head_ref }} back to ${{ github.base_ref }}"
+          git merge --no-ff $MAIN_BRANCH_NAME -m "Auto-merge ${{ github.head_ref }} back to ${{ github.base_ref }}"
           git push
       - name: Create Release
         run:
