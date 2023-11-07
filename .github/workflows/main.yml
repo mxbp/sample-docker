@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -45,8 +46,8 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=ref,event=branch,suffix=-${{ github.run_attempt }}
-            type=ref,event=pr,suffix=-${{ github.run_attempt }}
+            type=ref,event=branch,suffix=-${{ github.run_number }}
+            type=ref,event=pr,suffix=-${{ github.run_number }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
       - name: Login to ghcr.io container registry
@@ -64,4 +65,18 @@ jobs:
           push: ${{ contains(github.event_name, 'push') }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      - name: Create/Update PR to 'main'
+        if: startsWith(github.ref_name, 'release') || startsWith(github.ref_name, 'hotfix')
+        # TODO: READMR.md :: Settings > Actions > General > Workflow permissions > Allow GitHub Actions to create and
+        # approve pull requests
+        run: |
+          gh_pr_up() {
+            gh pr create "$@" || gh pr edit "$@"
+          }
+          gh_pr_up \
+            --base main \
+            --title "Release v${GITHUB_REF_NAME##*/}" \
+            --body "Created by GitHub Actions"
+        env:
+          GH_TOKEN: ${{ github.token }}
 ...
