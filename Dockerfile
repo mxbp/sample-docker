@@ -2,6 +2,8 @@ FROM alpine:latest
 
 ARG VERSION
 
-RUN echo "${VERSION}" > .version
+RUN apk update && \
+    apk upgrade && \
+    echo "${VERSION}" > .version
 
 CMD [ "cat", ".version" ]
