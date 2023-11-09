@@ -52,7 +52,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
       - name: Login to ghcr.io container registry
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io # FIXME: ${{ inputs.docker_registry }}
           username: ${{ secrets.docker_username != null && secrets.docker_username || github.actor }}
