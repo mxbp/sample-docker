@@ -58,7 +58,7 @@ jobs:
           username: ${{ secrets.docker_username != null && secrets.docker_username || github.actor }}
           password: ${{ secrets.docker_password != null && secrets.docker_password || secrets.GITHUB_TOKEN }}
       - name: ${{ github.event_name == 'pull_request' && 'Build' || 'Build and Push' }}
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile # FIXME: Make variable
