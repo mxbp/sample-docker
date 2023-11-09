@@ -12,7 +12,7 @@ env:
 
 jobs:
   create_tag:
-    name: Create tag
+    name: Create Release and tag
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged
     steps:
@@ -32,7 +32,7 @@ jobs:
           git config --local user.name "GitHub Actions Bot"
           git config --local user.email "github-actions-bot@github.com"
       - name: Set Git tag
-        # TODO: READMR.md :: Settings > Actions > General > Workflow permissions > Read and write permissions
+        # TODO: README.md :: Settings > Actions > General > Workflow permissions > Read and write permissions
         run: |
           git tag --force --message="v${GITHUB_HEAD_REF##*/}" "v${GITHUB_HEAD_REF##*/}"
           git push --force --tags
@@ -50,18 +50,3 @@ jobs:
         run: gh release create "v${GITHUB_HEAD_REF##*/}" --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
-        # id: create_release
-        # uses: actions/create-release@v1
-        # env:
-        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # with:
-        #   tag_name: ${{ steps.tag.outputs.tag }}
-        #   release_name: ${{ steps.tag.outputs.tag }}
-        #   draft: false
-        #   prerelease: false
-
-      # Create PR
-      # - name: pull-request
-      #   run: |
-      #     gh_pr_up() { gh pr create $* || gh pr edit $* }
-      #     gh_pr_up --title "My pull request" --body "Description"
