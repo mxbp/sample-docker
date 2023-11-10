@@ -32,7 +32,7 @@ jobs:
       description: ${{ steps.description.outputs.description }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Debug Info
@@ -58,13 +58,13 @@ jobs:
       - name: Setup Docker Context for Buildx
         run: docker context create ${{ github.event.repository.name }}
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         with:
           version: latest
           endpoint: ${{ github.event.repository.name }}
       - name: Docker Meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }} # FIXME: ${{ inputs.docker_registry }}
           tags: |
@@ -74,7 +74,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
       - name: Login to ghcr.io container registry # FIXME: ${{ inputs.docker_registry }}
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io # FIXME: ${{ inputs.docker_registry }}
           username: ${{ secrets.docker_username != null && secrets.docker_username || github.actor }}
@@ -143,17 +143,17 @@ jobs:
           min-versions-to-keep: 10
           delete-only-untagged-versions: true
 
-      - name: Create/Update PR to 'main'
+      - name: Create/Update PR from '${{ github.ref_name }}' to 'main'
         if: startsWith(github.ref_name, 'release') || startsWith(github.ref_name, 'hotfix')
         # TODO: README.md :: Settings > Actions > General > Workflow permissions > Allow GitHub Actions to create and
         # approve pull requests
         run: |
           gh_pr_up() {
-            gh pr create --draft "$@" || gh pr edit "$@"
+            gh pr create --draft --fill "$@" || gh pr edit "$@"
           }
           gh_pr_up \
             --base "main" \
             --title "Release v${GITHUB_REF_NAME##*/}" \
-            --body "Created by GitHub Actions"
+        # --body "Created by GitHub Actions"
         env:
           GH_TOKEN: ${{ github.token }}
