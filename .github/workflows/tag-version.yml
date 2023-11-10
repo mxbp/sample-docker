@@ -44,7 +44,7 @@ jobs:
 
       - name: Auto-merge PR to '${{ github.event.repository.default_branch }}'
         run: gh pr merge --auto --merge
-        env:
+        env: 
           GITHUB_TOKEN: ${{ github.token }}
       # TODO: Mark develop branch as default branch
       # - name: Merge branch '${{ github.ref_name }}' into '${{ github.event.repository.default_branch }}'
