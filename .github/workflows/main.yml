@@ -143,17 +143,17 @@ jobs:
           min-versions-to-keep: 10
           delete-only-untagged-versions: true
 
-      - name: Create/Update PR to 'main'
+      - name: Create/Update PR from '${{ github.ref_name }}' to 'main'
         if: startsWith(github.ref_name, 'release') || startsWith(github.ref_name, 'hotfix')
         # TODO: README.md :: Settings > Actions > General > Workflow permissions > Allow GitHub Actions to create and
         # approve pull requests
         run: |
           gh_pr_up() {
-            gh pr create --draft "$@" || gh pr edit "$@"
+            gh pr create --draft --fill "$@" || gh pr edit "$@"
           }
           gh_pr_up \
             --base "main" \
             --title "Release v${GITHUB_REF_NAME##*/}" \
-            --body "Created by GitHub Actions"
+        # --body "Created by GitHub Actions"
         env:
           GH_TOKEN: ${{ github.token }}
