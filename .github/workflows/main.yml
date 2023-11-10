@@ -50,7 +50,7 @@ jobs:
         id: description
         run: |
           repo_full_name=$(echo "${GITHUB_REPOSITORY}")
-          access_token=${{ secrets.GITHUB_TOKEN }}
+          access_token=${{ github.token }}
           echo "description=$(curl -s -H 'Authorization: token $access_token' \
             'https://api.github.com/repos/$repo_full_name' | jq -r '.description')" >> "$GITHUB_OUTPUT"
       - name: Setup QEMU
@@ -78,7 +78,7 @@ jobs:
         with:
           registry: ghcr.io # FIXME: ${{ inputs.docker_registry }}
           username: ${{ secrets.docker_username != null && secrets.docker_username || github.actor }}
-          password: ${{ secrets.docker_password != null && secrets.docker_password || secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.docker_password != null && secrets.docker_password || github.token }}
       - name: Build
         uses: docker/build-push-action@v4
         with:
