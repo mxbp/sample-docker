@@ -54,7 +54,7 @@ jobs:
           echo "description=$(curl -s -H 'Authorization: token $access_token' \
             'https://api.github.com/repos/$repo_full_name' | jq -r '.description')" >> "$GITHUB_OUTPUT"
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
       - name: Setup Docker Context for Buildx
         run: docker context create ${{ github.event.repository.name }}
       - name: Setup Docker Buildx
