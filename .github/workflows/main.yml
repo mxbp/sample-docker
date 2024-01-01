@@ -1,159 +1,45 @@
 ---
-name: Docker
-
+name: Example
 on:
   push:
     branches:
       - develop
-      - "release/**"
-      - "hotfix/**"
+      - release/**
+      - hotfix/**
   pull_request:
     branches:
       - develop
+      - release/**
+      - hotfix/**
   workflow_dispatch:
-
-permissions:
-  # Anchore
-  contents: write # required to upload to the Dependency submission API
+    inputs:
+      environment:
+        description: "Environment for deploy"
+        required: false
+        type: choice
+        options:
+          - sandbox
+          - develop
+          - quality_assurance
+          - user_acceptance_testing
+          - production
+env:
+  GH_ENV_SBX: "sandbox"
+  GH_ENV_DEV: "develop"
+  GH_ENV_TST: "quality_assurance"
+  GH_ENV_STG: "user_acceptance_testing"
+  GH_ENV_PROD: "production"
 
 jobs:
-  build_push:
-    name: Build > Push
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write # Publish package
-      pull-requests: write # Create PR
-      # Anchore
-      contents: write # required to upload to the Dependency submission API
-      # contents: read # for actions/checkout to fetch code
-      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
-      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
-    outputs:
-      description: ${{ steps.description.outputs.description }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Debug Info
-        run: |
-          echo "github.head_ref - ${{ github.head_ref }}"
-          echo "github.base_ref - ${{ github.base_ref }}"
-          echo "github.ref_name - ${{ github.ref_name }}"
-          echo "github.run_number - ${{ github.run_number }}"
-          echo "github.run_attempt - ${{ github.run_attempt }}"
-        # repo_full_name=$(echo "${GITHUB_REPOSITORY}")
-        # access_token=${{ secrets.GITHUB_TOKEN }}
-        # description=$(curl -s -H "Authorization: token $access_token" "https://api.github.com/repos/$repo_full_name" | jq -r '.description')
-        # echo "Repo Description: $description"
-      - name: Get description
-        id: description
-        run: |
-          repo_full_name=$(echo "${GITHUB_REPOSITORY}")
-          access_token=${{ github.token }}
-          echo "description=$(curl -s -H 'Authorization: token $access_token' \
-            'https://api.github.com/repos/$repo_full_name' | jq -r '.description')" >> "$GITHUB_OUTPUT"
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v2
-      - name: Setup Docker Context for Buildx
-        run: docker context create ${{ github.event.repository.name }}
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          version: latest
-          endpoint: ${{ github.event.repository.name }}
-      - name: Docker Meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }} # FIXME: ${{ inputs.docker_registry }}
-          tags: |
-            type=ref,event=branch,suffix=-${{ github.run_number }}
-            type=ref,event=pr,suffix=-${{ github.run_number }}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-      - name: Login to ghcr.io container registry # FIXME: ${{ inputs.docker_registry }}
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io # FIXME: ${{ inputs.docker_registry }}
-          username: ${{ secrets.docker_username != null && secrets.docker_username || github.actor }}
-          password: ${{ secrets.docker_password != null && secrets.docker_password || github.token }}
-      - name: Build
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: ./Dockerfile # FIXME: Make variable
-          load: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64
-          build-args: VERSION=${GITHUB_REF_NAME##*/}
+  build:
+    uses: mxbp/github-pipelines/.github/workflows/build_node.yml@main
+    with:
+      version: 18
+      install_command: echo install_command
+      build_command: echo build_command
+      test_command: echo test_command
+      publish_command: echo publish_command
+      build_dir: ./
 
-      # - name: Anchore - Create SBOM
-      #   uses: anchore/sbom-action@v0
-      #   with:
-      #     format: spdx-json
-      #     output-file: "${{ github.event.repository.name }}-sbom.spdx.json"
-      # - name: Anchore - Scan SBOM
-      #   uses: anchore/scan-action@v3
-      #   with:
-      #     sbom: "${{ github.event.repository.name }}-sbom.spdx.json"
-
-      # Anchore Syft SBOM scan
-      - name: Scan the image and upload dependency results
-        uses: anchore/sbom-action@v0
-        with:
-          image: ${{ steps.meta.outputs.tags }}
-          artifact-name: image.spdx.json
-          # dependency-snapshot: true
-
-      # Anchore Grype vulnerability scan
-      - name: Anchore - Grype scan image
-        uses: anchore/scan-action@v3
-        id: scan
-        with:
-          image: ${{ steps.meta.outputs.tags }}
-          # fail-build: true
-          # severity-cutoff: high
-      - name: Anchore - Upload scan SARIF report
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
-
-      - name: Push
-        if: contains(github.event_name, 'push')
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: ./Dockerfile # FIXME: Make variable
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64
-          build-args: VERSION=${GITHUB_REF_NAME##*/}
-          # TODO: Add description for Docker image
-          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=${{ steps.description.outputs.description }}
-
-      - name: Delete all untagged container versions except latest untagged versions
-        uses: actions/delete-package-versions@v4
-        with:
-          package-name: ${{ github.event.repository.name }}
-          package-type: container
-          min-versions-to-keep: 10
-          delete-only-untagged-versions: true
-
-      - name: Create/Update PR from '${{ github.ref_name }}' to 'main'
-        if: startsWith(github.ref_name, 'release') || startsWith(github.ref_name, 'hotfix')
-        # TODO: README.md :: Settings > Actions > General > Workflow permissions > Allow GitHub Actions to create and
-        # approve pull requests
-        run: |
-          gh_pr_up() {
-            gh pr create --draft --fill "$@" || gh pr edit "$@"
-          }
-          gh_pr_up \
-            --base "main" \
-            --title "Release v${GITHUB_REF_NAME##*/}" \
-        # --body "Created by GitHub Actions"
-        env:
-          GH_TOKEN: ${{ github.token }}
+  docker:
+    uses: mxbp/github-pipelines/.github/workflows/docker.yml@main
