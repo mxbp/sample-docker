@@ -5,5 +5,15 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    assignees:
+      - mxbp
     labels:
-      - github-actions dependencies
+      - dependencies
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    assignees:
+      - mxbp
+    labels:
+      - dependencies
