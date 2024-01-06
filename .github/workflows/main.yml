@@ -1,6 +1,6 @@
 ---
 name: Build → Deploy
-run-name: ${{ github.event.head_commit.message }} AND ${{ github.event.workflow_run.head_commit.message }} AND ${{ github.event.commits[0].message }} 🚀 to ${{ inputs.environment != null && inputs.environment || github.ref_name == 'develop' && 'develop' || 'quality_assurance' }} 💪 @${{ github.actor }}
+run-name: ${{ github.event.head_commit.message }} 🚀 to ${{ inputs.environment != null && inputs.environment || github.ref_name == 'develop' && 'develop' || 'quality_assurance' }} 💪 @${{ github.actor }}
 on:
   push:
     branches:
