@@ -29,7 +29,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   sample-nodejs:
-    name: ${{ github.event.repository.name }}
+    name: NodeJS # ${{ github.event.repository.name }}
     uses: mxbp/github-pipelines/.github/workflows/node_apprunner.yml@main
     with:
       node_version: 18
