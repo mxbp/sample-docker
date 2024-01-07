@@ -8,4 +8,4 @@ on:
       - closed
 jobs:
   build:
-    uses: mxbp/github-piplines/.github/workflows/release.yml@main
+    uses: mxbp/github-pipelines/.github/workflows/release.yml@main
