@@ -1,6 +1,6 @@
 ---
 name: Build → Deploy
-run-name: ${{ github.event.head_commit.message }} AND ${{ github.event.workflow_run.head_commit.message }} AND ${{ github.event.commits[0].message }} 🚀 to ${{ inputs.environment != null && inputs.environment || github.ref_name == 'develop' && 'develop' || 'quality_assurance' }} 💪 @${{ github.actor }}
+run-name: ${{ github.event.head_commit.message }} 🚀 to ${{ inputs.environment != null && inputs.environment || github.ref_name == 'develop' && 'develop' || 'quality_assurance' }} 💪 @${{ github.actor }}
 on:
   push:
     branches:
@@ -29,7 +29,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   sample-nodejs:
-    name: ${{ github.event.repository.name }}
+    name: NodeJS
     uses: mxbp/github-pipelines/.github/workflows/node_apprunner.yml@main
     with:
       node_version: 18
@@ -40,4 +40,5 @@ jobs:
       stage_environment: user_acceptance_testing
       production_environment: production
       # aws_s3_bucket: test # TODO: Remove
+      # aws_role_arn: test # TODO: Remove
     secrets: inherit
