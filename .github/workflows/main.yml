@@ -29,7 +29,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   sample-nodejs:
-    name: ${{ github.event.repository.name }}
+    name: NodeJS
     uses: mxbp/github-pipelines/.github/workflows/node_apprunner.yml@main
     with:
       node_version: 18
@@ -39,6 +39,6 @@ jobs:
       test_environment: quality_assurance
       stage_environment: user_acceptance_testing
       production_environment: production
-      aws_s3_bucket: test # TODO: Remove
-      aws_role_arn: test # TODO: Remove
+      # aws_s3_bucket: test # TODO: Remove
+      # aws_role_arn: test # TODO: Remove
     secrets: inherit
