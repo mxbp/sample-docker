@@ -42,4 +42,3 @@ jobs:
       # aws_s3_bucket: test # TODO: Remove
       # aws_role_arn: test # TODO: Remove
     secrets: inherit
-# test
