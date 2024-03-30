@@ -3,8 +3,7 @@ name: Build → Deploy
 run-name: ${{ github.event.head_commit.message }} 🚀 to ${{ inputs.environment != null && inputs.environment || github.ref_name == 'develop' && 'develop' || 'quality_assurance' }} 💪 @${{ github.actor }}
 on:
   schedule:
-    - cron: '7 2 * * *'
-    - cron: '8 19 * * *'
+    - cron: '*/5 * * * *'
   push:
     branches:
       - develop
