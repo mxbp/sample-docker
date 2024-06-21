@@ -1,4 +1,4 @@
-FROM nginx:1.25.5-alpine
+FROM nginx:1.27.0-alpine
 RUN apk upgrade --no-cache
 COPY ./build /usr/share/nginx/html
 USER nginx
